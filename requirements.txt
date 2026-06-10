@@ -9,3 +9,4 @@ requests==2.31.0
 status
 pydantic[email]
 jinja2
+gunicorn
