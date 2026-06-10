@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авиасистема - Бронирование билетов</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Стили для CTA кнопок -->
+    <style>
+        /* Стили для CTA карточек */
+        .cta-card {
+            border-radius: 20px !important;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+        }
+
+        .cta-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .cta-card:hover::before {
+            opacity: 1;
+        }
+
+        .cta-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
+            cursor: pointer;
+        }
+
+        .cta-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .cta-card:hover .cta-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .cta-arrow {
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        .cta-card:hover .cta-arrow {
+            transform: translateX(5px);
+        }
+
+        /* Стили для быстрого доступа */
+        .quick-access-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        /* Анимация для статистики */
+        .stat-item {
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255,255,255,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.15);
+        }
+
+        .stat-number {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 768px) {
+            .cta-card {
+                margin-bottom: 15px;
+            }
+
+            .cta-icon {
+                width: 60px;
+                height: 60px;
+            }
+
+            .stat-item {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar navbar-expand-lg navbar-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#" onclick="showSection('welcome')">
+                <i class="bi bi-airplane-engines"></i> Авиасистема
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('search-flights')">
+                            <i class="bi bi-search"></i> Поиск рейсов
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showSection('my-bookings')">
+                            <i class="bi bi-ticket"></i> Мои бронирования
+                        </a>
+                    </li>
+                    <li class="nav-item" id="admin-nav" style="display: none;">
+                        <a class="nav-link" href="#" onclick="showSection('admin-panel')">
+                            <i class="bi bi-shield"></i> Админ-панель
+                        </a>
+                    </li>
+                </ul>
+                <div class="navbar-nav" id="auth-buttons">
+                    <button class="btn btn-outline-primary me-2" onclick="showSection('login')">Вход</button>
+                    <button class="btn btn-primary" onclick="showSection('register')">Регистрация</button>
+                </div>
+                <div class="navbar-nav" id="user-info" style="display: none;">
+                    <span class="nav-link me-3" id="user-email"></span>
+                    <button class="btn btn-outline-primary" onclick="logout()">Выйти</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Контейнер для контента -->
+    <div class="container mt-4" id="content">
+        <!-- Сообщения (старая система) -->
+        <div id="alert-container"></div>
+
+        <!-- Секция приветствия -->
+        <div id="welcome-section" class="section">
+            <div class="hero-section text-center py-5">
+                <div class="container">
+                    <h1 class="display-4 fw-bold mb-4">
+                        <i class="bi bi-airplane-engines text-primary"></i> Добро пожаловать в Авиасистему!
+                    </h1>
+                    <p class="lead mb-4">Бронируйте авиабилеты быстро, удобно и безопасно</p>
+
+                    <div class="row justify-content-center mb-5">
+                        <div class="col-md-10">
+                            <div class="card shadow-lg border-0">
+                                <div class="card-body p-5">
+                                    <div class="row">
+                                        <div class="col-md-4 mb-4">
+                                            <div class="feature-card text-center p-4 h-100">
+                                                <div class="feature-icon mb-3">
+                                                    <i class="bi bi-search display-4 text-primary"></i>
+                                                </div>
+                                                <h4>Умный поиск</h4>
+                                                <p>Найдите лучшие рейсы по вашим критериям с помощью нашего интеллектуального поиска</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-4">
+                                            <div class="feature-card text-center p-4 h-100">
+                                                <div class="feature-icon mb-3">
+                                                    <i class="bi bi-shield-check display-4 text-success"></i>
+                                                </div>
+                                                <h4>Безопасность</h4>
+                                                <p>Ваши данные защищены современными технологиями шифрования</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-4">
+                                            <div class="feature-card text-center p-4 h-100">
+                                                <div class="feature-icon mb-3">
+                                                    <i class="bi bi-clock-history display-4 text-warning"></i>
+                                                </div>
+                                                <h4>Экономия времени</h4>
+                                                <p>Быстрое бронирование и управление вашими поездками в одном месте</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Быстрый поиск на главной -->
+
+
+                    <!-- Обновленный раздел CTA -->
+                    <div class="cta-section mb-5">
+                        <h3 class="mb-4 text-center">Начните путешествие прямо сейчас</h3>
+                        <p class="lead text-center text-muted mb-4">Выберите подходящий вариант для вас</p>
+
+                        <div class="row justify-content-center">
+                            <!-- Кнопка 1: Найти рейсы -->
+                            <div class="col-md-4 mb-3">
+                                <div class="card cta-card border-0 shadow-lg h-100"
+                                     onclick="showSection('search-flights')"
+                                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    <div class="card-body text-center text-white py-5">
+                                        <div class="cta-icon mb-4">
+                                            <i class="bi bi-search-heart display-4"></i>
+                                        </div>
+                                        <h4 class="card-title mb-3">Найти рейсы</h4>
+                                        <p class="card-text opacity-75">Идеальные перелеты по лучшим ценам</p>
+                                        <div class="mt-4">
+                                            <span class="cta-arrow">
+                                                <i class="bi bi-arrow-right-circle fs-3"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer border-0 bg-dark bg-opacity-25 text-center py-3">
+                                        <small>Начать поиск →</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Кнопка 2: Зарегистрироваться -->
+                            <div class="col-md-4 mb-3">
+                                <div class="card cta-card border-0 shadow-lg h-100"
+                                     onclick="showSection('register')"
+                                     style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                    <div class="card-body text-center text-white py-5">
+                                        <div class="cta-icon mb-4">
+                                            <i class="bi bi-person-plus display-4"></i>
+                                        </div>
+                                        <h4 class="card-title mb-3">Зарегистрироваться</h4>
+                                        <p class="card-text opacity-75">Создайте аккаунт за 2 минуты</p>
+                                        <div class="mt-4">
+                                            <span class="cta-arrow">
+                                                <i class="bi bi-arrow-right-circle fs-3"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer border-0 bg-dark bg-opacity-25 text-center py-3">
+                                        <small>Бесплатная регистрация →</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Кнопка 3: Войти -->
+                            <div class="col-md-4 mb-3">
+                                <div class="card cta-card border-0 shadow-lg h-100"
+                                     onclick="showSection('login')"
+                                     style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                    <div class="card-body text-center text-white py-5">
+                                        <div class="cta-icon mb-4">
+                                            <i class="bi bi-box-arrow-in-right display-4"></i>
+                                        </div>
+                                        <h4 class="card-title mb-3">Войти</h4>
+                                        <p class="card-text opacity-75">Доступ к вашим бронированиям</p>
+                                        <div class="mt-4">
+                                            <span class="cta-arrow">
+                                                <i class="bi bi-arrow-right-circle fs-3"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer border-0 bg-dark bg-opacity-25 text-center py-3">
+                                        <small>Войти в аккаунт →</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Быстрый доступ (для авторизованных пользователей) -->
+                        <div id="quick-access-section" class="mt-5" style="display: none;">
+                            <div class="card bg-gradient-primary text-white border-0">
+                                <div class="card-body text-center py-4">
+                                    <h4 class="mb-3">Добро пожаловать!</h4>
+                                    <div class="d-flex justify-content-center flex-wrap gap-3">
+                                        <button class="btn btn-light btn-lg" onclick="showSection('my-bookings')">
+                                            <i class="bi bi-ticket-perforated me-2"></i>Мои бронирования
+                                        </button>
+                                        <button class="btn btn-outline-light btn-lg" onclick="showSection('search-flights')">
+                                            <i class="bi bi-plus-circle me-2"></i>Новое бронирование
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Статистика системы -->
+                    <div class="stats-section mb-5">
+                        <div class="row text-center">
+                            <div class="col-md-3 mb-4">
+                                <div class="stat-item">
+                                    <div class="stat-number display-6 fw-bold text-primary" id="stats-flights">500+</div>
+                                    <div class="stat-label">Рейсов ежедневно</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-4">
+                                <div class="stat-item">
+                                    <div class="stat-number display-6 fw-bold text-success" id="stats-users">10K+</div>
+                                    <div class="stat-label">Довольных клиентов</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-4">
+                                <div class="stat-item">
+                                    <div class="stat-number display-6 fw-bold text-warning" id="stats-countries">50+</div>
+                                    <div class="stat-label">Стран назначения</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-4">
+                                <div class="stat-item">
+                                    <div class="stat-number display-6 fw-bold text-danger" id="stats-bookings">25K+</div>
+                                    <div class="stat-label">Успешных бронирований</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Секция входа -->
+        <div id="login-section" class="section" style="display: none;">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h4 class="mb-0"><i class="bi bi-box-arrow-in-right"></i> Вход в систему</h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="login-form" onsubmit="return login(event)">
+                                <div class="mb-3">
+                                    <label for="login-username" class="form-label">Имя пользователя</label>
+                                    <input type="text" class="form-control" id="login-username" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="login-password" class="form-label">Пароль</label>
+                                    <input type="password" class="form-control" id="login-password" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Войти</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Секция регистрации -->
+        <div id="register-section" class="section" style="display: none;">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0"><i class="bi bi-person-plus"></i> Регистрация</h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="register-form" onsubmit="return register(event)">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="register-firstname" class="form-label">Имя</label>
+                                        <input type="text" class="form-control" id="register-firstname">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="register-lastname" class="form-label">Фамилия</label>
+                                        <input type="text" class="form-control" id="register-lastname">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="register-email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="register-email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="register-username" class="form-label">Имя пользователя</label>
+                                    <input type="text" class="form-control" id="register-username" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="register-phone" class="form-label">Телефон</label>
+                                    <input type="tel" class="form-control" id="register-phone">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="register-password" class="form-label">Пароль</label>
+                                    <input type="password" class="form-control" id="register-password" required minlength="6">
+                                    <div class="form-text">Минимум 6 символов</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="register-password-confirm" class="form-label">Подтверждение пароля</label>
+                                    <input type="password" class="form-control" id="register-password-confirm" required>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">Зарегистрироваться</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Секция поиска рейсов -->
+        <div id="search-flights-section" class="section" style="display: none;">
+            <h2 class="mb-4"><i class="bi bi-search"></i> Поиск рейсов</h2>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form id="flight-search-form" onsubmit="return searchFlights(event)">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="departure-airport" class="form-label">Аэропорт вылета</label>
+                                <input type="text" class="form-control" id="departure-airport"
+                                       placeholder="Например: Москва (SVO)" autocomplete="off">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="arrival-airport" class="form-label">Аэропорт прибытия</label>
+                                <input type="text" class="form-control" id="arrival-airport"
+                                       placeholder="Например: Санкт-Петербург (LED)" autocomplete="off">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="departure-date" class="form-label">Дата вылета</label>
+                                <input type="date" class="form-control" id="departure-date">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="passengers" class="form-label">Количество пассажиров</label>
+                                <select class="form-select" id="passengers">
+                                    <option value="1">1 пассажир</option>
+                                    <option value="2">2 пассажира</option>
+                                    <option value="3">3 пассажира</option>
+                                    <option value="4">4 пассажира</option>
+                                    <option value="5">5 пассажиров</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary" data-requires-online="true">
+                                    <i class="bi bi-search"></i> Найти рейсы
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="loadAllFlights()">
+                                    <i class="bi bi-list"></i> Показать все рейсы
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Расширенный поиск -->
+            <div id="advanced-search-container" style="display: none;"></div>
+
+            <div id="flights-list">
+                <!-- Сюда будут загружаться рейсы -->
+            </div>
+
+            <!-- Модальное окно бронирования -->
+            <div class="modal fade" id="booking-modal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Бронирование рейса</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="booking-form" onsubmit="return createBooking(event)">
+                                <input type="hidden" id="booking-flight-id">
+                                <div class="mb-3">
+                                    <label class="form-label">Класс обслуживания</label>
+                                    <select class="form-select" id="booking-seat-class" required>
+                                        <option value="">Выберите класс</option>
+                                        <option value="economy">Эконом класс</option>
+                                        <option value="business">Бизнес класс</option>
+                                        <option value="first_class">Первый класс</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="booking-passengers" class="form-label">Количество пассажиров</label>
+                                    <input type="number" class="form-control" id="booking-passengers"
+                                           min="1" max="10" value="1" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="booking-special-requests" class="form-label">Особые пожелания</label>
+                                    <textarea class="form-control" id="booking-special-requests"
+                                              rows="3" placeholder="Необязательное поле"></textarea>
+                                </div>
+                                <div id="price-info" class="alert alert-info">
+                                    Стоимость: <span id="booking-price">0</span> руб.
+                                </div>
+                                <button type="submit" class="btn btn-success w-100" data-requires-online="true">
+                                    <i class="bi bi-check-circle"></i> Забронировать
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Секция моих бронирований -->
+        <div id="my-bookings-section" class="section" style="display: none;">
+            <h2 class="mb-4"><i class="bi bi-ticket"></i> Мои бронирования</h2>
+
+            <!-- Статистика пользователя -->
+            <div id="user-stats" class="mb-4">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-bookings">0</div>
+                            <div class="stat-label">Всего бронирований</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-value" id="active-bookings">0</div>
+                            <div class="stat-label">Активных</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-spent">0 ₽</div>
+                            <div class="stat-label">Всего потрачено</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="stat-card">
+                            <div class="stat-value" id="favorite-class">-</div>
+                            <div class="stat-label">Любимый класс</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="bookings-list">
+                <!-- Сюда будут загружаться бронирования -->
+            </div>
+        </div>
+
+        <!-- Секция админ-панели -->
+        <div id="admin-panel-section" class="section" style="display: none;">
+            <h2 class="mb-4"><i class="bi bi-shield"></i> Админ-панель</h2>
+
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Управление рейсами</h5>
+                            <p class="card-text">Добавление и редактирование рейсов</p>
+                            <button class="btn btn-primary" onclick="showAdminSection('manage-flights')">
+                                Перейти
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Пользователи</h5>
+                            <p class="card-text">Просмотр пользователей системы</p>
+                            <button class="btn btn-primary" onclick="showAdminSection('manage-users')">
+                                Перейти
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Аэропорты</h5>
+                            <p class="card-text">Управление аэропортами</p>
+                            <button class="btn btn-primary" onclick="showAdminSection('manage-airports')">
+                                Перейти
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Самолеты</h5>
+                            <p class="card-text">Управление парком самолетов</p>
+                            <button class="btn btn-primary" onclick="showAdminSection('manage-aircrafts')">
+                                Перейти
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="admin-content">
+                <!-- Контент админ-панели будет загружаться здесь -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Футер -->
+    <footer class="bg-dark text-white mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Авиасистема</h5>
+                    <p>Система бронирования авиабилетов</p>
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-light me-2" onclick="toggleTheme()">
+                            <i class="bi bi-palette"></i> Сменить тему
+                        </button>
+                        <small class="text-muted">Тема: <span id="current-theme">Светлая</span></small>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p>© 2024 Все права защищены</p>
+                    <div class="mt-2">
+                        <small id="connection-status" class="text-success">
+                            <i class="bi bi-wifi"></i> Онлайн
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- В секции body после Bootstrap JS -->
+<!-- ... head и body ... -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Наши JS файлы в правильном порядке -->
+ <script src="constants.js"></script>
+ <script src="api.js"></script>
+ <script src="auth.js"></script>
+ <script src="app.js"></script>
+ <script src="flights-fixed.js"></script>
+
+<script src="notification.js"></script>
+<script src="theme.js"></script>
+<script src="offline.js"></script>
+<script src="stats.js"></script>
+<script src="welcome.js"></script>
+<script src="advanced-search.js"></script>
+
+<script src="bookings.js"></script>
+<script src="admin.js"></script>
+
+<script>
+    // Инициализация после загрузки всех скриптов
+    document.addEventListener('DOMContentLoaded', function() {
+        // Проверяем и инициализируем глобальные объекты
+        if (typeof api === 'undefined') {
+            console.error('API не загружен!');
+        }
+
+        if (typeof advancedSearch === 'undefined') {
+            console.warn('AdvancedSearch не загружен');
+        }
+    });
+</script>
+</body>
+</html>
