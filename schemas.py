@@ -348,7 +348,7 @@ class LuggageResponse(LuggageBase):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class BookingCreate(BookingBase):
     luggage: Optional[list[LuggageBase]] = []  # НОВОЕ: список багажа

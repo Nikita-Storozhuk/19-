@@ -609,7 +609,7 @@ async def root():
     }
 
 
-# В main.py добавьте следующие endpoints после существующих:
+# В app.py добавьте следующие endpoints после существующих:
 
 # Flight endpoints для админов (редактирование и удаление)
 @app.put("/admin/flights/{flight_id}", response_model=schemas.FlightResponse)
@@ -909,7 +909,7 @@ async def get_statistics(
     }
 
 
-# В main.py добавьте следующие эндпоинты:
+# В app.py добавьте следующие эндпоинты:
 
 @app.get("/bookings/{booking_id}/upgrade-options")
 async def get_upgrade_options(
@@ -1136,7 +1136,7 @@ async def cancel_upgrade_request(
     }
 
 
-# В main.py добавьте endpoints для работы с багажом
+# В app.py добавьте endpoints для работы с багажом
 
 @app.get("/luggage/pricing")
 async def get_luggage_prices(
@@ -1327,7 +1327,7 @@ async def add_luggage_to_booking(
     }
 
 
-# В main.py добавьте новые endpoints для багажа
+# В app.py добавьте новые endpoints для багажа
 
 # ДОБАВИТЬ endpoint для получения цен на багаж
 @app.get("/luggage/pricing", response_model=schemas.LuggagePricingResponse)
@@ -1538,7 +1538,7 @@ async def calculate_luggage_price_endpoint(
             detail=f"Некорректные параметры: {str(e)}"
         )
 
-# Добавьте эти endpoints в main.py после существующих flight endpoints
+# Добавьте эти endpoints в app.py после существующих flight endpoints
 
 @app.get("/flights/search/", response_model=List[schemas.FlightResponse])
 async def search_flights_endpoint(
