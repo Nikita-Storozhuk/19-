@@ -3,12 +3,15 @@ from typing import List, Optional
 from datetime import datetime
 import uvicorn
 
-from fastapi import FastAPI, Depends, HTTPException, status, Query
+from fastapi import FastAPI, Depends, HTTPException, status, Query, Request
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from starlette.responses import JSONResponse
+from starlette.staticfiles import StaticFiles
+from starlette.templating import Jinja2Templates
 
 import crud, models, schemas
 from database import get_db, setup_database
@@ -39,6 +42,13 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/")
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request, "message": "Hello"})
 
 
 # User endpoints
@@ -1661,10 +1671,12 @@ async def get_upcoming_flights_endpoint(
     return flights
 
 
-if __name__ == "__main__":
+
+
+"""if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="localhost",
         port=8000
 
-    )
+    )"""
