@@ -10,3 +10,4 @@ status
 pydantic[email]
 jinja2
 gunicorn
+asyncpg
