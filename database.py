@@ -39,9 +39,6 @@ engine = create_async_engine(
     max_overflow=10,
     pool_pre_ping=False,
     pool_recycle=3600,
-    connect_args={
-        "local_infile": True,
-    }
 )
 
 AsyncSessionLocal = async_sessionmaker(
