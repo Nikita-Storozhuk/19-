@@ -96,6 +96,7 @@ async def get_flights(
 
 async def create_flight(db: AsyncSession, flight: schemas.FlightCreate):
     db_flight = models.Flight(**flight.dict())
+    db_flight.status = db_flight.status.upper()
     db.add(db_flight)
     await db.commit()
     await db.refresh(db_flight)
