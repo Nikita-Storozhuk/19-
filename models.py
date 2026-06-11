@@ -72,7 +72,7 @@ class Flight(Base):
     available_economy_seats = Column(Integer, nullable=False)
     available_business_seats = Column(Integer, nullable=False)
     available_first_class_seats = Column(Integer, nullable=False)
-    status = Column(String(20), default="scheduled")  # scheduled, delayed, cancelled, completed
+    status = Column(String(20), default="scheduled".upper())  # scheduled, delayed, cancelled, completed
 
     # Relationships
     aircraft = relationship("Aircraft", back_populates="flights")
