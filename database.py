@@ -40,7 +40,6 @@ engine = create_async_engine(
     pool_pre_ping=False,
     pool_recycle=3600,
     connect_args={
-        "autocommit": True,
         "local_infile": True,
     }
 )
