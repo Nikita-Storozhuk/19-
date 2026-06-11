@@ -200,7 +200,8 @@ function getFlightCardHTML(flight) {
 
     // Проверка возможности бронирования
 
-    const isAvailable = flight.status === 'SCHEDULED' || flight.status === 'on_time';
+    const statusLower = (flight.status || '').toLowerCase();
+    const isAvailable = statusLower === 'scheduled' || statusLower === 'on_time';
     const isFutureFlight = hoursDifference > 0.5; // более чем 30 минут до вылета
 
     // ВАЖНО: Используем безопасную проверку API
