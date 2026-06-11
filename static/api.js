@@ -1,8 +1,8 @@
 // api.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
 // Конфигурация API
 const API_CONFIG = {
-    BASE_URL: 'http://localhost:8000',
-    //BASE_URL: 'https://sketchily-equipped-spidermonkey.cloudpub.ru',
+    //BASE_URL: 'http://localhost:8000',
+    BASE_URL: 'https://one9-vlbb.onrender.com/',
     AUTH_TYPE: 'basic'
 };
 
