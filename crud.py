@@ -96,10 +96,6 @@ async def get_flights(
 
 async def create_flight(db: AsyncSession, flight: schemas.FlightCreate):
     db_flight = models.Flight(**flight.dict())
-    if db_flight.status == None or db_flight.status == '' or db_flight.status.islower():
-        db_flight.status = 'scheduled'.upper()
-    else:
-        db_flight.status = db_flight.status.upper()
     db.add(db_flight)
     await db.commit()
     await db.refresh(db_flight)
