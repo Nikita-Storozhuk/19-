@@ -2,6 +2,8 @@
 // Убраны дубликаты функций showAlert и улучшена структура
 
 // Общая функция для отображения уведомлений
+BASE_URL = 'https://one9-vlbb.onrender.com'
+
 window.showAlert = window.showAlert || function(message, type = 'info') {
     console.log(`[${type.toUpperCase()}] ${message}`);
 
@@ -331,7 +333,7 @@ async function testApiConnection() {
     //http://localhost:8000/health
     try {
         console.log('Тестирование подключения к API...');
-        const response = await fetch('http:127.0.0.1:8000/health', {
+        const response = await fetch(BASE_URL + '/health', {
             method: 'GET',
             mode: 'cors',
             headers: { 'Accept': 'application/json' }
